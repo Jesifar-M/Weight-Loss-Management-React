@@ -96,3 +96,42 @@ After logout, the user is redirected to the Login page.
 **Name:** Rahul
 **Email:** [rahul@gmail.com](mailto:rahul@gmail.com)
 **Password:** Rahul@123
+
+## Run Process
+
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Start JSON Server
+
+```bash
+npx json-server db.json --port 5000
+```
+
+JSON Server will run on:
+
+```text
+http://localhost:5000
+```
+
+Keep this terminal running.
+
+### 3. Start React Application
+
+Open another terminal in the project folder and run:
+
+```bash
+npm start
+```
+
+The React application will open in the browser.
+
+### 4. Login
+
+Use the demo login details:
+
+**Email:** [rahul@gmail.com](mailto:rahul@gmail.com)
+**Password:** Rahul@123
