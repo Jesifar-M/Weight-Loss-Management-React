@@ -187,9 +187,17 @@ If the browser does not open automatically, open the application URL manually.
 
 ---
 
-## 6. Create an Account
+## 6. Sample Login Details
 
 Create an account using the signup page before logging in. The local database file is excluded from Git because it may contain private account and weight data.
+
+| Field | Value |
+| --- | --- |
+| Name | Demo User |
+| Email | `demo@example.com` |
+| Password | Create your own password when signing up |
+
+These are example details only; no preconfigured demo account is included in the repository.
 
 ---
 
