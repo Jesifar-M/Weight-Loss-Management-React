@@ -1,4 +1,26 @@
 {
-  "users": [],
-  "weights": []
+  "users": [
+    {
+      "id": "demo-user",
+      "name": "Demo User",
+      "email": "demo@example.com",
+      "password": "Demo@123"
+    }
+  ],
+  "weights": [
+    {
+      "id": "demo-weight-1",
+      "userId": "demo-user",
+      "weight": "60",
+      "date": "2026-10-25",
+      "time": "9:05:02 PM"
+    },
+    {
+      "id": "demo-weight-2",
+      "userId": "demo-user",
+      "weight": "50",
+      "date": "2026-10-26",
+      "time": "1:09:13 AM"
+    }
+  ]
 }

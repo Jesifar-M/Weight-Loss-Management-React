@@ -189,19 +189,30 @@ If the browser does not open automatically, open the application URL manually.
 
 ## 6. Sample Login Details
 
-Create an account using the signup page before logging in. The local database file is excluded from Git because it may contain private account and weight data.
+Use this sample account with the database created from `db.example.json`. It is a public demo account, not a personal account.
 
 | Field | Value |
 | --- | --- |
 | Name | Demo User |
 | Email | `demo@example.com` |
-| Password | Create your own password when signing up |
+| Password | `Demo@123` |
 
-These are example details only; no preconfigured demo account is included in the repository.
+Do not use this password for any personal account.
 
 ---
 
 ## 7. Testing
+
+### Sample Weight Records
+
+The example database includes these sample records for the demo account:
+
+| Weight | Date | Time |
+| --- | --- | --- |
+| 60 kg | 2026-10-25 | 9:05:02 PM |
+| 50 kg | 2026-10-26 | 1:09:13 AM |
+
+These are fictional demo records.
 
 The following test cases should be checked to verify the application.
 
