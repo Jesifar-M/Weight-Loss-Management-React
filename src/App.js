@@ -1,8 +1,8 @@
 import React from "react";
 import {
-  BrowserRouter,
-  Routes,
-  Route
+BrowserRouter,
+Routes,
+Route
 } from "react-router-dom";
 
 import Login from "./pages/Login";
@@ -19,80 +19,57 @@ import ProtectedRoute from "./components/ProtectedRoute";
 function App() {
   return (
     <BrowserRouter>
+  <Navbar />
+  <Routes>
+    <Route path="/" element={<Login />} />
+    <Route path="/login" element={<Login />} />
+    <Route path="/signup" element={<Signup />} />
 
-      <Navbar />
+    <Route
+      path="/dashboard"
+      element={
+        <ProtectedRoute>
+          <Dashboard />
+        </ProtectedRoute>
+      }
+    />
 
-      <Routes>
+    <Route
+      path="/add-weight"
+      element={
+        <ProtectedRoute>
+          <AddWeight />
+        </ProtectedRoute>
+      }
+    />
 
-        {/* Login */}
-        <Route
-          path="/"
-          element={<Login />}
-        />
+    <Route
+      path="/weights"
+      element={
+        <ProtectedRoute>
+          <WeightList />
+        </ProtectedRoute>
+      }
+    />
 
-        <Route
-          path="/login"
-          element={<Login />}
-        />
+    <Route
+      path="/edit-weight/:id"
+      element={
+        <ProtectedRoute>
+          <EditWeight />
+        </ProtectedRoute>
+      }
+    />
 
-        {/* Signup */}
-        <Route
-          path="/signup"
-          element={<Signup />}
-        />
-
-        {/* Dashboard */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Add Weight */}
-        <Route
-          path="/add-weight"
-          element={
-            <ProtectedRoute>
-              <AddWeight />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Weight List */}
-        <Route
-          path="/weights"
-          element={
-            <ProtectedRoute>
-              <WeightList />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Edit Weight */}
-        <Route
-          path="/edit-weight/:id"
-          element={
-            <ProtectedRoute>
-              <EditWeight />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Find Weight Loss */}
-        <Route
-          path="/find-weight-loss"
-          element={
-            <ProtectedRoute>
-              <FindWeightLoss />
-            </ProtectedRoute>
-          }
-        />
-
-      </Routes>
-
+    <Route
+      path="/find-weight-loss"
+      element={
+        <ProtectedRoute>
+          <FindWeightLoss />
+        </ProtectedRoute>
+      }
+    />
+  </Routes>
     </BrowserRouter>
   );
 }

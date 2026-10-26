@@ -1,197 +1,259 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 function WeightList() {
   const [weights, setWeights] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
   const recordsPerPage = 5;
 
-  // Get weights
-  const fetchWeights = () => {
-    fetch("http://localhost:5000/weights")
-      .then((response) => response.json())
-      .then((data) => setWeights(data))
-      .catch((error) => console.log(error));
+  const fetchWeights = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const storedUser = localStorage.getItem("user");
+
+      if (!storedUser) {
+        setError("Please login first.");
+        setWeights([]);
+        return;
+      }
+
+      const user = JSON.parse(storedUser);
+
+      if (!user.id) {
+        setError("User ID not found. Please login again.");
+        setWeights([]);
+        return;
+      }
+
+      // Fetch all records, then filter by logged-in user
+      const response = await fetch("http://localhost:5000/weights");
+
+      if (!response.ok) {
+        throw new Error("Unable to fetch weight records.");
+      }
+
+      const data = await response.json();
+
+      const userWeights = data
+        .filter(
+          (item) => String(item.userId) === String(user.id)
+        )
+        .sort(
+          (a, b) => new Date(b.date) - new Date(a.date)
+        );
+
+      setWeights(userWeights);
+    } catch (err) {
+      console.error("Error fetching weights:", err);
+      setError(
+        "Unable to load weight records. Please make sure JSON Server is running on port 5000."
+      );
+      setWeights([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     fetchWeights();
   }, []);
 
-  // Delete
   const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this weight?"
-    );
-
-    if (!confirmDelete) {
+    if (!window.confirm("Are you sure you want to delete this weight record?")) {
       return;
     }
 
     try {
-      await fetch(`http://localhost:5000/weights/${id}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `http://localhost:5000/weights/${encodeURIComponent(id)}`,
+        { method: "DELETE" }
+      );
 
-      fetchWeights();
-
-      // If last item of a page is deleted
-      if (
-        currentPage > 1 &&
-        (weights.length - 1) <= (currentPage - 1) * recordsPerPage
-      ) {
-        setCurrentPage(currentPage - 1);
+      if (!response.ok) {
+        throw new Error("Delete failed.");
       }
-    } catch (error) {
-      console.log(error);
+
+      alert("Weight record deleted successfully!");
+      await fetchWeights();
+    } catch (err) {
+      console.error("Delete error:", err);
+      alert("Unable to delete the record.");
     }
   };
 
-  // Edit
-  const handleEdit = async (weight) => {
-    const newWeight = prompt(
-      "Enter new weight:",
-      weight.weight
+  const handleEdit = async (item) => {
+    const newWeight = window.prompt(
+      "Enter the new weight in kg:",
+      item.weight
     );
 
-    if (newWeight === null || newWeight.trim() === "") {
+    if (newWeight === null) return;
+
+    const parsedWeight = Number(newWeight);
+
+    if (
+      newWeight.trim() === "" ||
+      !Number.isFinite(parsedWeight) ||
+      parsedWeight <= 0
+    ) {
+      alert("Please enter a valid weight.");
       return;
     }
 
     try {
-      await fetch(`http://localhost:5000/weights/${weight.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          weight: newWeight,
-        }),
-      });
+      const response = await fetch(
+        `http://localhost:5000/weights/${encodeURIComponent(item.id)}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ weight: parsedWeight }),
+        }
+      );
 
-      fetchWeights();
-    } catch (error) {
-      console.log(error);
+      if (!response.ok) {
+        throw new Error("Update failed.");
+      }
+
+      alert("Weight updated successfully!");
+      await fetchWeights();
+    } catch (err) {
+      console.error("Update error:", err);
+      alert("Unable to update the weight.");
     }
   };
 
-  // Pagination
-  const totalPages = Math.ceil(
-    weights.length / recordsPerPage
-  );
-
-  const startIndex =
-    (currentPage - 1) * recordsPerPage;
+  const totalPages = Math.ceil(weights.length / recordsPerPage);
+  const startIndex = (currentPage - 1) * recordsPerPage;
 
   const currentWeights = weights.slice(
     startIndex,
     startIndex + recordsPerPage
   );
 
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+
+    if (totalPages === 0 && currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  }, [totalPages, currentPage]);
+
   return (
-    <div className="container mt-4">
+    <div className="container mt-4 mb-5">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2>Weight List</h2>
 
-      <h2 className="text-center mb-4">
-        Weight List
-      </h2>
+        <Link to="/add-weight" className="btn btn-primary">
+          + Add Weight
+        </Link>
+      </div>
 
-      {currentWeights.length === 0 ? (
-        <p className="text-center">
-          No weight records found.
-        </p>
-      ) : (
-        currentWeights.map((item, index) => (
-          <div
-            className="card mb-3 p-3"
-            key={item.id}
-          >
-            <div className="row align-items-center">
-
-              <div className="col-md-6">
-                <h5>
-                  {startIndex + index + 1}.{" "}
-                  {item.weight} kg
-                </h5>
-
-                <p className="mb-1">
-                  Date: {item.date}
-                </p>
-
-                <p className="mb-0">
-                  Time: {item.time}
-                </p>
-              </div>
-
-              <div className="col-md-6 text-md-end mt-3 mt-md-0">
-
-                <button
-                  className="btn btn-warning me-2"
-                  onClick={() => handleEdit(item)}
-                >
-                  Edit
-                </button>
-
-                <button
-                  className="btn btn-danger"
-                  onClick={() => handleDelete(item.id)}
-                >
-                  Delete
-                </button>
-
-              </div>
-
-            </div>
-          </div>
-        ))
-      )}
-
-      {/* Pagination */}
-
-      {totalPages > 0 && (
-        <div className="d-flex justify-content-center align-items-center gap-2 mt-4">
-
-          <button
-            className="btn btn-secondary"
-            disabled={currentPage === 1}
-            onClick={() =>
-              setCurrentPage(currentPage - 1)
-            }
-          >
-            Previous
-          </button>
-
-          {Array.from(
-            { length: totalPages },
-            (_, index) => (
-              <button
-                key={index}
-                className={
-                  currentPage === index + 1
-                    ? "btn btn-dark"
-                    : "btn btn-primary"
-                }
-                onClick={() =>
-                  setCurrentPage(index + 1)
-                }
-              >
-                {index + 1}
-              </button>
-            )
-          )}
-
-          <button
-            className="btn btn-secondary"
-            disabled={currentPage === totalPages}
-            onClick={() =>
-              setCurrentPage(currentPage + 1)
-            }
-          >
-            Next
-          </button>
-
+      {loading && (
+        <div className="alert alert-info">
+          Loading weight records...
         </div>
       )}
 
+      {error && (
+        <div className="alert alert-danger">
+          {error}
+          <div className="mt-2">
+            <button
+              className="btn btn-sm btn-outline-danger"
+              onClick={fetchWeights}
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      )}
+
+      {!loading && !error && weights.length === 0 && (
+        <div className="alert alert-warning">
+          No weight records found for your account.
+        </div>
+      )}
+
+      {!loading && !error && weights.length > 0 && (
+        <>
+          <div className="table-responsive">
+            <table className="table table-bordered table-striped table-hover">
+              <thead className="table-dark">
+                <tr>
+                  <th>Sl. No.</th>
+                  <th>Weight (kg)</th>
+                  <th>Date</th>
+                  <th>Added Time</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {currentWeights.map((item, index) => (
+                  <tr key={item.id}>
+                    <td>{startIndex + index + 1}</td>
+                    <td>{item.weight} kg</td>
+                    <td>{item.date}</td>
+                    <td>{item.time || "Not available"}</td>
+                    <td>
+                      <button
+                        className="btn btn-sm btn-warning me-2 mb-1"
+                        onClick={() => handleEdit(item)}
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        className="btn btn-sm btn-danger mb-1"
+                        onClick={() => handleDelete(item.id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="d-flex justify-content-between align-items-center mt-3">
+            <span>
+              Showing {startIndex + 1}–
+              {Math.min(startIndex + recordsPerPage, weights.length)} of{" "}
+              {weights.length} records
+            </span>
+
+            <div>
+              <button
+                className="btn btn-outline-primary me-2"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((page) => page - 1)}
+              >
+                Previous
+              </button>
+
+              <span>
+                Page {currentPage} of {totalPages}
+              </span>
+
+              <button
+                className="btn btn-outline-primary ms-2"
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage((page) => page + 1)}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

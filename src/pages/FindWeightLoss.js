@@ -5,6 +5,7 @@ function FindWeightLoss() {
   const [toDate, setToDate] = useState("");
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const findWeightLoss = async (e) => {
     e.preventDefault();
@@ -22,81 +23,102 @@ function FindWeightLoss() {
       return;
     }
 
+    const storedUser = localStorage.getItem("user");
+
+    if (!storedUser) {
+      setError("Please login first.");
+      return;
+    }
+
+    let user;
+
     try {
-      // Get logged-in user using the same key as Login.js
-      const storedUser = localStorage.getItem("user");
+      user = JSON.parse(storedUser);
+    } catch {
+      setError("Invalid login information. Please login again.");
+      return;
+    }
 
-      if (!storedUser) {
-        setError("Please login first.");
-        return;
-      }
+    if (!user?.id) {
+      setError("User ID is missing. Please login again.");
+      return;
+    }
 
-      const user = JSON.parse(storedUser);
+    setLoading(true);
 
-      const response = await fetch(
-        "http://localhost:5000/weights"
-      );
+    try {
+      // Fetch all weight records from JSON Server
+      const response = await fetch("http://localhost:5000/weights");
 
       if (!response.ok) {
         throw new Error("Unable to fetch weight records.");
       }
 
-      const allWeights = await response.json();
+      const data = await response.json();
 
-      // Get only the logged-in user's weight records
-      const myWeights = allWeights.filter(
-        (item) =>
-          String(item.userId) === String(user.id)
-      );
+      if (!Array.isArray(data)) {
+        throw new Error("Invalid weight data received.");
+      }
 
-      // Filter records between selected dates
-      const filteredWeights = myWeights
-        .filter(
-          (item) =>
+      // Filter records for the logged-in user and selected dates
+      const filteredWeights = data
+        .filter((item) => {
+          const sameUser =
+            String(item.userId) === String(user.id);
+
+          const validDate =
+            typeof item.date === "string" &&
             item.date >= fromDate &&
-            item.date <= toDate
-        )
-        .sort(
-          (a, b) =>
-            new Date(a.date) - new Date(b.date)
-        );
+            item.date <= toDate;
+
+          return sameUser && validDate;
+        })
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      console.log("Logged-in user:", user);
+      console.log("Selected dates:", fromDate, toDate);
+      console.log("Records returned by API:", data);
+      console.log("Matching weight records:", filteredWeights);
 
       if (filteredWeights.length < 2) {
         setError(
-          "At least two weight records are required between the selected dates."
+          `Only ${filteredWeights.length} matching weight record(s) found. Please check the user ID and dates.`
         );
         return;
       }
 
-      const startingWeight = Number(
-        filteredWeights[0].weight
-      );
-
+      const startingWeight = Number(filteredWeights[0].weight);
       const currentWeight = Number(
         filteredWeights[filteredWeights.length - 1].weight
       );
 
-      const weightDifference =
-        startingWeight - currentWeight;
+      if (
+        !Number.isFinite(startingWeight) ||
+        !Number.isFinite(currentWeight)
+      ) {
+        setError("Invalid weight values found in the records.");
+        return;
+      }
 
       setResult({
         fromDate,
         toDate,
         startingWeight,
         currentWeight,
-        weightDifference
+        weightDifference: startingWeight - currentWeight,
       });
     } catch (err) {
       console.error("Find Weight Loss Error:", err);
-
       setError(
-        "Unable to calculate weight loss. Please check whether JSON Server is running on port 5000."
+        "Unable to calculate weight loss. Make sure JSON Server is running on port 5000."
       );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="container mt-5">
+    <div className="container mt-5 mb-5">
       <div className="row justify-content-center">
         <div className="col-md-6">
           <div className="card shadow">
@@ -106,17 +128,14 @@ function FindWeightLoss() {
               </h2>
 
               {error && (
-                <div className="alert alert-danger">
+                <div className="alert alert-danger" role="alert">
                   {error}
                 </div>
               )}
 
               <form onSubmit={findWeightLoss}>
                 <div className="mb-3">
-                  <label
-                    htmlFor="fromDate"
-                    className="form-label"
-                  >
+                  <label htmlFor="fromDate" className="form-label">
                     From Date
                   </label>
 
@@ -125,18 +144,13 @@ function FindWeightLoss() {
                     type="date"
                     className="form-control"
                     value={fromDate}
-                    onChange={(e) =>
-                      setFromDate(e.target.value)
-                    }
+                    onChange={(e) => setFromDate(e.target.value)}
                     required
                   />
                 </div>
 
                 <div className="mb-3">
-                  <label
-                    htmlFor="toDate"
-                    className="form-label"
-                  >
+                  <label htmlFor="toDate" className="form-label">
                     To Date
                   </label>
 
@@ -145,9 +159,8 @@ function FindWeightLoss() {
                     type="date"
                     className="form-control"
                     value={toDate}
-                    onChange={(e) =>
-                      setToDate(e.target.value)
-                    }
+                    min={fromDate || undefined}
+                    onChange={(e) => setToDate(e.target.value)}
                     required
                   />
                 </div>
@@ -155,8 +168,9 @@ function FindWeightLoss() {
                 <button
                   type="submit"
                   className="btn btn-primary w-100"
+                  disabled={loading}
                 >
-                  Find Weight Loss
+                  {loading ? "Calculating..." : "Find Weight Loss"}
                 </button>
               </form>
 

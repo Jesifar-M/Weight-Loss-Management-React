@@ -2,120 +2,129 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
+const [error, setError] = useState("");
+const [loading, setLoading] = useState(false);
 
-  const navigate = useNavigate();
+const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError("");
+const handleLogin = async (e) => {
+e.preventDefault();
+setError("");
 
-    try {
-      const cleanEmail = email.trim().toLowerCase();
-      const cleanPassword = password.trim();
+const cleanEmail = email.trim().toLowerCase();
+const cleanPassword = password.trim();
 
-      const response = await fetch(
-        "http://localhost:5000/users?email=" +
-          encodeURIComponent(cleanEmail)
-      );
+if (!cleanEmail || !cleanPassword) {
+  setError("Please enter email and password.");
+  return;
+}
 
-      if (!response.ok) {
-        throw new Error("Server error");
-      }
+setLoading(true);
 
-      const users = await response.json();
+try {
+  const response = await fetch(
+    `http://localhost:5000/users?email=${encodeURIComponent(cleanEmail)}`
+  );
 
-      const loggedInUser = users.find(
-        (user) => user.password === cleanPassword
-      );
+  if (!response.ok) {
+    throw new Error("Server error");
+  }
 
-      if (!loggedInUser) {
-        setError("Invalid email or password");
-        return;
-      }
+  const users = await response.json();
 
-      localStorage.setItem("user", JSON.stringify(loggedInUser));
+  const loggedInUser = users.find(
+    (user) =>
+      user.email.toLowerCase() === cleanEmail &&
+      user.password === cleanPassword
+  );
 
-      navigate("/dashboard");
-    } catch (err) {
-      console.error("Login error:", err);
-      setError("Cannot connect to server. Please check JSON Server.");
-    }
-  };
+  if (!loggedInUser) {
+    setError("Invalid email or password.");
+    return;
+  }
 
-  return (
-    <div className="container mt-5">
-      <div className="row justify-content-center">
-        <div className="col-md-5">
-          <div className="card shadow p-4">
-            <h2 className="text-center mb-4">
-              Weight Loss Management
-            </h2>
+  localStorage.setItem("user", JSON.stringify(loggedInUser));
 
-            <h4 className="text-center mb-4">Login</h4>
+  navigate("/dashboard");
+} catch (err) {
+  console.error("Login Error:", err);
+  setError(
+    "Cannot connect to server. Please check whether JSON Server is running on port 5000."
+  );
+} finally {
+  setLoading(false);
+}
 
-            {error && (
-              <div className="alert alert-danger" role="alert">
-                {error}
-              </div>
-            )}
+};
 
-            <form onSubmit={handleLogin}>
-              <div className="mb-3">
-                <label htmlFor="login-email" className="form-label">
-                  Email
-                </label>
+return ( <div className="container mt-5"> <div className="row justify-content-center"> <div className="col-md-5"> <div className="card shadow p-4"> <h2 className="text-center mb-4">
+Weight Loss Management </h2>
 
-                <input
-                  type="email"
-                  id="login-email"
-                  name="email"
-                  className="form-control"
-                  placeholder="Enter email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  autoComplete="email"
-                  required
-                />
-              </div>
+        <h4 className="text-center mb-4">Login</h4>
 
-              <div className="mb-3">
-                <label htmlFor="login-password" className="form-label">
-                  Password
-                </label>
-
-                <input
-                  type="password"
-                  id="login-password"
-                  name="password"
-                  className="form-control"
-                  placeholder="Enter password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="btn btn-primary w-100"
-              >
-                Login
-              </button>
-            </form>
-
-            <p className="text-center mt-3">
-              Don't have an account?{" "}
-              <Link to="/signup">Signup</Link>
-            </p>
+        {error && (
+          <div className="alert alert-danger" role="alert">
+            {error}
           </div>
-        </div>
+        )}
+
+        <form onSubmit={handleLogin}>
+          <div className="mb-3">
+            <label htmlFor="login-email" className="form-label">
+              Email
+            </label>
+
+            <input
+              type="email"
+              id="login-email"
+              name="email"
+              className="form-control"
+              placeholder="Enter email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              required
+            />
+          </div>
+
+          <div className="mb-3">
+            <label htmlFor="login-password" className="form-label">
+              Password
+            </label>
+
+            <input
+              type="password"
+              id="login-password"
+              name="password"
+              className="form-control"
+              placeholder="Enter password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="btn btn-primary w-100"
+            disabled={loading}
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
+
+        <p className="text-center mt-3 mb-0">
+          Don't have an account? <Link to="/signup">Signup</Link>
+        </p>
       </div>
     </div>
-  );
+  </div>
+</div>
+
+);
 }
 
 export default Login;
