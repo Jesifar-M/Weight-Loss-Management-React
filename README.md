@@ -1,113 +1,98 @@
 # Weight Loss Management Site
 
-**Project Type:** React Web Application
+## Project Description
 
-## 1. Project Description
+A React-based Weight Loss Management website that allows users to create an account, login, add and manage weight records, and calculate weight loss between two dates.
 
-A React-based web application that helps users record daily weight, view weight history, calculate weight loss, and manage weight records.
-
-## 2. Technologies Used
+## Technologies Used
 
 * React.js
 * JavaScript
-* HTML5 and CSS3
+* HTML5
+* CSS3
 * Bootstrap
 * React Router DOM
 * JSON Server
 * JSON
 
-## 3. Features
+## Features
 
-* User Signup and Login
-* Add Weight with Automatic Date and Time
-* One Weight Entry Per Day
-* View Weight Records
-* Pagination
-* Find Weight Loss Between Two Dates
-* Edit and Delete Weight Records
-* Logout
-* Input Validation and Error Messages
+### 1. User Signup
 
-## 4. GitHub Repository
+Users can signup by providing:
 
-**Source Code:**
-https://github.com/Jesifar-M/Weight-Loss-Management-React
+* Name
+* Email
+* Password
 
-## 5. Prerequisites
+### 2. Add Weight
 
-* Node.js
-* npm
-* Web browser
+Logged-in users can add their weight.
 
-## 6. How to Run the Project
+The current date is automatically added when the weight is saved.
 
-**Step 1: Open the project folder**
+The added time is also recorded.
 
-```bash
-cd weight-loss-management-react
-```
+### 3. One Weight Per Day
 
-**Step 2: Install dependencies**
+A logged-in user can add only one weight per day.
 
-```bash
-npm install
-```
+If the user tries to add another weight on the same day, an error message is displayed.
 
-**Step 3: Start JSON Server**
+**Error Message:**
 
-```bash
-npx json-server --watch db.json --port 5000
-```
+`You can add only one weight per day.`
 
-**Step 4: Start React in a second terminal**
+### 4. View Weight List
 
-```bash
-npm start
-```
+Logged-in users can view the list of weights they have added.
 
-**React Application:** http://localhost:3000
+Each weight record displays:
 
-## 7. Demo Login
+* Weight
+* Date
+* Added Time
 
-Use these credentials if the account exists in `db.json`.
+### 5. Pagination
 
-* **Name:** Rahul
-* **Email:** [rahul@gmail.com](mailto:rahul@gmail.com)
-* **Password:** Rahul@123
+The weight listing page has pagination.
 
-If the account is unavailable, register through the Signup page.
+Five weight records are displayed per page.
 
-## 8. Weight Loss Calculation
+Example:
 
-**Formula:** Weight Loss = Starting Weight − Ending Weight
+`Previous  1  2  Next`
 
-**Example:** 60 kg − 50 kg = **10 kg weight loss**
+### 6. Find Weight Loss Between Two Dates
 
-At least two matching weight records are required.
+Users can find the weight loss between two selected dates.
 
-## 9. Testing
+**Formula:**
 
-| Test Case             | Expected Result              |
-| --------------------- | ---------------------------- |
-| Signup                | Account created              |
-| Valid Login           | Login successful             |
-| Invalid Login         | Error displayed              |
-| Add Weight            | Weight, date, and time saved |
-| Duplicate Daily Entry | Error displayed              |
-| View Weight Records   | Records displayed            |
-| Pagination            | Navigate between pages       |
-| Find Weight Loss      | Weight loss calculated       |
-| Edit Weight           | Record updated               |
-| Delete Weight         | Record removed               |
-| Logout                | Redirected to login          |
+`Weight Loss = Starting Weight - Ending Weight`
 
-## 10. Troubleshooting
+Example:
 
-* If React does not open, check whether `npm start` is running.
-* If data does not load, check whether JSON Server is running.
-* If login fails, verify the credentials and database.
-* If dependencies are missing, run `npm install`.
+Starting Weight: 70 kg
+Ending Weight: 65 kg
 
-## 11. Conclusion
+Weight Loss: 5 kg
 
-This project demonstrates a React-based weight management application with user authentication, weight tracking, pagination, weight-loss calculation, and weight record management.
+### 7. Edit and Delete Weight
+
+Logged-in users can:
+
+* Edit weight details
+* Delete weight details
+
+### 8. Logout
+
+Logged-in users can logout from the website.
+
+After logout, the user is redirected to the Login page.
+
+## Demo Login
+
+**Name:** Rahul
+**Email:** [rahul@gmail.com](mailto:rahul@gmail.com)
+**Password:** Rahul@123
